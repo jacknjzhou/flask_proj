@@ -34,7 +34,12 @@ user={run_user}
 
 ##调用方式
 >1.需要在相应的调用模块中导入msg_push模块(加入到服务所在的环境变量变量配置中即可),然后按照正常的python包方式调用
+>2.客户端调用示例 
 
+```
+>> from msg_push import send_tasks
+>> send_tasks.send_mail.delay({"RecvList":["example@example.com"],"Title":"Test","Content":"Test Mail"})
+```
 ##扩展
 >后续会添加 APP应用消息/短信 等处理
 
