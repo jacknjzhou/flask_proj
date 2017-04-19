@@ -55,5 +55,17 @@ user={run_user}
 >2.指定加载配置的地方见 msg_push/celery.py 中 f_app = create_app('default')
 >
 
-
-
+-------
+2017-04-19 14:40:00
+#增加简单的接口访问方式,提交请求.
+接口部署方式
+```push_svr_api.ini
+[program:push_svr_api]
+command=/{virtual_env}/bin/gunicorn -c /{code_path}/gunicorn.py wsgi:app
+redirect_stderr=true
+stdout_logfile=/tmp/push_svr_api.log
+stdout_logfile_maxbytes=5MB
+stdout_logfile_backups=10
+directory=/{code_path}
+user={user}
+```
