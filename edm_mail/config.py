@@ -11,11 +11,7 @@ class Config:
     FLASKY_MAIL_SENDER = 'JustShareCloud Admin <server@example.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN') or 'server@example.com'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    MAIL_SERVER = 'mail.example.com'
-    MAIL_PORT = 25
-    MAIL_USE_TLS = False
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+
     TITLE_DESC = u'即享云'
     #celery public config
     CELERY_TASK_SERIALIZER = 'json'
@@ -31,15 +27,6 @@ class Config:
     CELERY_ENABLE_UTC = False
 
     CELERY_LOG_FILE = '/tmp/celery_msg_push_proj.log'
-
-    CELERY_QUEUES = (
-        Queue('oss.notify.send.mail', Exchange('oss.send.mail'), routing_key='oss.send.mail'),
-        Queue('oss.notify.send.app', Exchange('oss.send.app'), routing_key='oss.send.app'),
-    )
-    CELERY_ROUTES = {
-        'msg_push.send_tasks.send_mail': {'queue': 'oss.notify.send.mail', 'routing_key': 'oss.send.mail'},
-        'msg_push.send_tasks.send_app': {'queue': 'oss.notify.send.app', 'routing_key': 'oss.send.app'}
-    }
 
     @staticmethod
     def init_app(app):
