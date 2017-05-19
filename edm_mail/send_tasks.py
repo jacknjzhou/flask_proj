@@ -1,7 +1,7 @@
 #!-*-encoding:utf8-*-
 from __future__ import  absolute_import
-from msg_push.celery import app
-from msg_push.celery import mail
+from edm_mail.celery import app
+from edm_mail.celery import mail
 from flask_mail import Message
 
 import random
@@ -16,8 +16,10 @@ except:
 from celery.task import Task
 from celery.utils.log import get_task_logger
 from flask import current_app
-
 from msg_push.c_tools import validate_mail_addr
+
+from edm_mail.platform_msg.platform_message_process import PlatformMessageProcess
+from edm_mail.platform_msg.platform_message_process_detail import PlatformMessageDetailProcess
 
 logger = get_task_logger(__name__)
 
@@ -36,8 +38,8 @@ class OutputTask(Task):
         return super(OutputTask,self).after_return(status,retval,task_id,args,kwargs,einfo)
 
 
-@app.task(base=OutputTask,bind=True)
-def send_mail(self,r_data={}):
+@app.task(base=OutputTask,bind=True,max_retries=3)
+def send_edm_mail(self,r_data={}):
     """
     @ function:process send mail use plugin flask-mail
     @ r_data = {"RecvList":[],"Title":"","Content":""}
@@ -64,8 +66,44 @@ def send_mail(self,r_data={}):
             msg.html = r_content
             mail.send(msg)
             print "send message to:%s"%(item)
-            time.sleep(0.5)
-    except Exception, e:
+            logger.info(item)
+            #time.sleep(0.5)
+    except Exception as e:
         traceback.print_exc()
-        return False
+        return self.retry(exc=e,countdown=5)
+    return True
+
+
+@app.task(base=OutputTask,bind=True)
+def send_request(self,r_data={}):
+    try:
+        r_args = []
+        r_kwargs = {"secretKey":current_app.config.get('USRSYS_SECRET_KEY'),
+                    "secretInfo":current_app.config.get('R_SECRET_INFO'),
+                    "userHost":current_app.config.get('USRSYS_API_HOST'),
+                    "getalladmincontactinfo":current_app.config.get('USRSYS_API_URL_GET_ADMIN_CONTACT'),
+                    "getallemployeecontactinfo":current_app.config.get('USRSYS_API_URL_GET_EMPLOYEE_CONTACT'),
+                    "analysis.host":current_app.config.get('ANALYSIS_API_HOST'),
+                    "analysis.url.searchcompany":current_app.config.get('ANALYSIS_API_URL_SEARCH_COMPANY')}
+        print json.dumps(r_kwargs)
+        PlatformMessageProcess(*r_args,**r_kwargs).run(r_data)
+    except Exception as e:
+        traceback.print_exc()
+        return self.retry(exc=e,countdown=5)
+    return True
+
+
+@app.task(base=OutputTask,bind=True,max_retries=3)
+def process_send(self,r_data = {}):
+    """function:处理发送平台系统公告"""
+    try:
+        #
+        r_args = []
+        r_kwargs = {"notifyHost":current_app.config.get("NOTIFY_API_HOST"),
+                    "notifyUrl":current_app.config.get("NOTIFY_API_URL")
+                    }
+        PlatformMessageDetailProcess(*r_args,**r_kwargs).run(r_data)
+    except Exception as e:
+        print traceback.format_exc()
+        return self.retry(exc=e,countdown=5)
     return True
