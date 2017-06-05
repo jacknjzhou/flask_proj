@@ -22,8 +22,8 @@ def send_mail():
     try:
         code = 0
         msg = "ok"
-        #print dir(request)
-        #print "*"*40
+        print dir(request)
+        print "*"*40
 
         r_data = request.get_data()
         lg.info(r_data)

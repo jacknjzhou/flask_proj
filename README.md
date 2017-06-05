@@ -69,3 +69,17 @@ stdout_logfile_backups=10
 directory=/{code_path}
 user={user}
 ```
+------
+2017-04-27
+#增加edm_mail信息处理批量的邮件/消息推送
+部署方式
+```edm_mail.ini
+[program:edm_mail] 
+command=/{virtualenv}/bin/celery -A edm_mail worker -n edmmail --loglevel=info 
+redirect_stderr=true 
+stdout_logfile=/tmp/oss_edm_mail.log 
+stdout_logfile_maxbytes=1MB 
+stdout_logfile_backups=10 
+directory=/{code_path}/OSS_Push_Svr 
+user={user}
+```

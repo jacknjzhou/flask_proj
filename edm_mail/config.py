@@ -8,7 +8,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     FLASKY_MAIL_SUBJECT_PREFIX = '[JustShareCloud]'
-    FLASKY_MAIL_SENDER = 'JustShareCloud Admin <msg@example.com>'
+    FLASKY_MAIL_SENDER = 'Flask Admin <msg@example.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN') or 'msg@example.com'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     #mail server config
@@ -31,17 +31,21 @@ class Config:
 
     CELERY_TIMEZONE = 'Asia/Shanghai'
     CELERY_ENABLE_UTC = False
-    CELERY_LOG_FILE = '/tmp/proj.log'
+    CELERY_LOG_FILE = '/tmp/celery_edm_push_proj.log'
 
     CELERY_QUEUES = (
         Queue('oss.notify.send.edm.mail', Exchange('oss.send.edm.mail'), routing_key='oss.send.edm.mail'),
         Queue('oss.notify.send.request', Exchange('oss.send.request'), routing_key='oss.send.request'),
         Queue('oss.notify.process.send', Exchange('oss.process.send'), routing_key='oss.process.send'),
+        Queue('oss.notify.send.platform.edm', Exchange('oss.send.platform.edm'), routing_key='oss.send.platform.edm'),
+        Queue('oss.notify.send.import.person.edm', Exchange('oss.send.import.person.edm'), routing_key='oss.send.import.person.edm'),
     )
     CELERY_ROUTES = {
         'edm_mail.send_tasks.send_edm_mail': {'queue': 'oss.notify.send.edm.mail', 'routing_key': 'oss.send.edm.mail'},
         'edm_mail.send_tasks.send_request': {'queue': 'oss.notify.send.request', 'routing_key': 'oss.send.request'},
-        'edm_mail.send_tasks.process_send': {'queue': 'oss.notify.process.send', 'routing_key': 'oss.process.send'}
+        'edm_mail.send_tasks.process_send': {'queue': 'oss.notify.process.send', 'routing_key': 'oss.process.send'},
+        'edm_mail.send_tasks.send_platform_edm': {'queue': 'oss.notify.send.platform.edm', 'routing_key': 'oss.send.platform.edm'},
+        'edm_mail.send_tasks.send_import_person_edm': {'queue': 'oss.notify.send.import.person.edm', 'routing_key': 'oss.send.import.person.edm'}
     }
     #
     R_SECRET_INFO = 'poZFo5gtTgmmYlWLfmgNWzunEdNGBhhelzYrJPIBWjlkYAejKiqz9MuG'

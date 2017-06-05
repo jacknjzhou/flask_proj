@@ -15,16 +15,11 @@ from edm_mail.ptools.analysis_helper import AnalysisHelper
 
 """
 @ function:
-@ 平台消息推送的处理逻辑：
-@    oss_notify数据库中 notify_platform_send_msg表中取提交过来的任务,进行处理
-@    oss_notify数据库中 notify_platform_send_msg_detail中记录上一个处理中的详情,
-@    即把所有的批量任务拆分成原子的操作.
-@    转换批量任务为原子任务,组合好相应的需要发送的消息内容,放入 notify_platform_send_msg_detail中,
-@    另外的定时任务单独去处理需要该表中的需要发送的任务
+@ 向已注册的平台用户推送营销邮件处理逻辑：
 """
 
 
-class PlatformMessageProcess(object):
+class EDMPlatformMailProcess(object):
     def __init__(self, *args, **kwargs ):
         self._usr_system = UserSystemHelper(*args,**kwargs)
         self._analysis_obj = AnalysisHelper(*args,**kwargs)
@@ -42,23 +37,24 @@ class PlatformMessageProcess(object):
             result = self._process_partly_company_push(info)
         elif info.get("sendFlag", 0) == 3:
             result = self._process_mail_push(info)
-
+        else:
+            result = True
         return result
 
     def _filter_empl_info(self, empl_info_list=[]):
         """function:过滤用户系统查询出来的用户信息"""
         try:
-            userid_list = [int(item.get("userId")) for item in empl_info_list if
-                           item and item.get("userId") not in ("", None, "0")]
+            user_mail_list = [item.get("email") for item in empl_info_list if
+                           item and item.get("email") not in ("", None)]
         except Exception, e:
             print(traceback.format_exc())
-            userid_list = []
+            user_mail_list = []
 
-        return userid_list
+        return user_mail_list
 
     def _process_partly_company_push(self, info={}):
         """function:推送指定的企业"""
-        # step-1:根据输入的企业查询对应的员工列表信息
+        # step-1:根据输入的企业查询对应的员工邮件信息
         r_companyidlist = info.get("companyIdList", [])
         try:
             result = True
@@ -67,32 +63,41 @@ class PlatformMessageProcess(object):
                 r_comp_empl_info = self._usr_system.fetch_company_people_info(item)
                 if r_comp_empl_info:
                     # 若获取的企业员工信息列表不空
-                    r_usrid_list = self._filter_empl_info(r_comp_empl_info)
-                    if not r_usrid_list:
+                    r_usr_mail_list = self._filter_empl_info(r_comp_empl_info)
+                    if not r_usr_mail_list:
                         print("[PlatformMessageProcess][_process_partly_company_push]find company[%s]platform user is null" % (str(item)))
                         continue
                     # 增加企业接收者信息
                     r_plaininfo = info.get("params", {}).get("plainInfo", {})
-                    r_plaininfo['userIdList'] = r_usrid_list
                     r_plaininfo['companyId'] = item
-                    r_plaininfo['companyIdList'] = [item]
+                    r_plaininfo['mailAddrList'] = r_usr_mail_list
                     # 重新设置其中的字段内容
-                    info['sendFlag'] = 2
+                    info['sendFlag'] = 3
                     # info['companyIdList'] = r_plaininfo.get("companyIdList", [])
-
+                    r_mail_addr_list = info.get("mailAddrList",[])
+                    if r_mail_addr_list:
+                        if isinstance(r_mail_addr_list,(list,)):
+                            info['mailAddrList'].extend(r_usr_mail_list)
+                        elif isinstance(r_mail_addr_list,(str,unicode)):
+                            info['mailAddrList'] = r_usr_mail_list
+                            info['mailAddrList'].append(r_mail_addr_list)
+                        else:
+                            info['mailAddrList'] = r_usr_mail_list
+                    else:
+                        info['mailAddrList'] = r_usr_mail_list
+                    #end
                     info['params']['plainInfo'] = r_plaininfo
                     # 开始写原子任务
-                    w_result, w_code = self.write_atom_task_detail_info(
+                    print json.dumps(info)
+                    w_result, w_code = self._process_mail_push(
                         {"title": info.get("title", ""), "content": info.get("content", ""),
-                           "params": info.get("params", {}),
-                           "operator": info.get("operator", ""), "status": 0, "sendFlag": info.get("sendFlag", 2),
-                           "companyIdList": info.get("companyIdList", []),
+                           "params": info.get("params", {}), "companyIdList": info.get("companyIdList", []),
                            "mailAddrList": info.get("mailAddrList", [])})
                     if not w_result:
-                        print("[PlatformMessageProcess]write atom task info fail:%s" % (json.dumps(info)))
+                        print("[EDMPlatformMailProcess]write atom task info fail:%s" % (json.dumps(info)))
                     time.sleep(0.1)
                 else:
-                    print("[PlatformMessageProcess]can not find company [%s] empl info." % (str(item)))
+                    print("[EDMPlatformMailProcess]can not find company [%s] empl info." % (str(item)))
         except Exception, e:
             msg = "Occur error."
             print(str(e))
@@ -142,6 +147,9 @@ class PlatformMessageProcess(object):
         from edm_mail import send_tasks
 
         r_mailaddrlist = info.get("mailAddrList", [])
+        if not r_mailaddrlist:
+            print "[EDMPlatformMailProcess][_process_mail_push]input mail address list is null,not process."
+            return True
         for index, item_mail in enumerate(r_mailaddrlist):
             if not validateEmail(item_mail):
                 # 校验不通过则继续循环
@@ -156,23 +164,6 @@ class PlatformMessageProcess(object):
                                             "RecvList":info.get('mailAddrList',[])})
 
             print json.dumps({"title": info.get("title", ""),
-                   "operator": info.get("operator", ""), "status": 0, "sendFlag": info.get("sendFlag", 3),
                    "mailAddrList": info.get("mailAddrList"), "companyIdList": info.get("companyIdList", [])})
             time.sleep(0.1)
         return True
-
-    def write_atom_task_detail_info(self, r_data ={}):
-        """function:记录拆分之后的原子任务列表"""
-        try:
-            result = True
-            code = 0
-            #TODO:add send info into execute queues
-            from edm_mail import send_tasks
-            send_tasks.process_send.delay(r_data)
-        except Exception, e:
-            print(str(e))
-            print traceback.format_exc()
-            result = False
-            code = 1
-
-        return result, code

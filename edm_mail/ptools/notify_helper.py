@@ -45,8 +45,16 @@ class NotifyHelper(object):
         }
         return tmp_content
 
-    def process_resp(self, resp_data={}):
+    def process_resp(self, resp_data = {}):
         """function:处理调用接口成功之后的解析"""
         if resp_data.get("errorCode") in ("0", 0):
             return True
         return False
+
+    def parse_details(self,resp_data = {}):
+        """function:获取返回data中的details字段内容"""
+        if resp_data.get("errorCode") in ("0",0):
+            r_details = resp_data.get('dataSet',{}).get('data',{}).get('details',[])
+
+            return len(r_details), r_details
+        return 0, []

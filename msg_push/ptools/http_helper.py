@@ -6,7 +6,7 @@ except:
     import json
 import traceback
 import httplib, urllib
-from edm_mail.c_tools import retry_merge
+from msg_push.ptools.c_tools import retry_merge
 
 
 class HttpHelper():
