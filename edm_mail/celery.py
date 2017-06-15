@@ -4,7 +4,7 @@ import os
 import sys
 from celery import Celery
 #from proj.flaskapp import create_app
-from msg_push import create_app
+from edm_mail import create_app
 from flask_mail import Mail
 
 #f_app = create_app(os.getenv('FLASK_SVR') or 'testing')
@@ -14,8 +14,8 @@ mail.init_app(f_app)
 f_app.app_context().push()
 
 def make_celery(app):
-    celery = Celery(app.import_name,include=['msg_push.send_tasks'])
-    celery.config_from_object('msg_push.config')
+    celery = Celery(app.import_name,include=['edm_mail.send_tasks'])
+    celery.config_from_object('edm_mail.config')
     celery.conf.update(app.config)
 
     TaskBase = celery.Task

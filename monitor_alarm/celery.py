@@ -4,18 +4,15 @@ import os
 import sys
 from celery import Celery
 #from proj.flaskapp import create_app
-from msg_push import create_app
-from flask_mail import Mail
+from monitor_alarm import create_app
 
 #f_app = create_app(os.getenv('FLASK_SVR') or 'testing')
 f_app = create_app('default')
-mail = Mail(f_app)
-mail.init_app(f_app)
 f_app.app_context().push()
 
 def make_celery(app):
-    celery = Celery(app.import_name,include=['msg_push.send_tasks'])
-    celery.config_from_object('msg_push.config')
+    celery = Celery(app.import_name,include=['monitor_alarm.task_proc'])
+    celery.config_from_object('monitor_alarm.config')
     celery.conf.update(app.config)
 
     TaskBase = celery.Task
