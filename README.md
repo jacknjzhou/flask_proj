@@ -15,7 +15,7 @@ flask-script
 >仅提供邮件等消息的推送,不做其他的业务逻辑处理(纯后端处理).
 
 ##代码结构
->git项目目录: OSS_Push_Svr  (现在仅使用到<strong>msg_push</strong>, 另一个待后续使用)
+>git项目目录: flask_proj  (现在仅使用到<strong>msg_push</strong>, 另一个待后续使用)
 
 ##启动方式
 >1.开发调试方式 celery worker -A msg_push -l info
@@ -27,7 +27,7 @@ redirect_stderr=true
 stdout_logfile=/tmp/msg_push.log
 stdout_logfile_maxbytes=5MB
 stdout_logfile_backups=10
-directory=/{code_path_dir}/OSS_Push_Svr
+directory=/{code_path_dir}/flask_proj
 user={run_user}
 ```
 注释:以上字段,需要根据环境进行做相应的配置调整
@@ -80,6 +80,20 @@ redirect_stderr=true
 stdout_logfile=/tmp/oss_edm_mail.log 
 stdout_logfile_maxbytes=1MB 
 stdout_logfile_backups=10 
-directory=/{code_path}/OSS_Push_Svr 
+directory=/{code_path}/flask_proj 
+user={user}
+```
+------
+2017-06-15
+#增加异常调用告警信息上报
+部署方式
+```monitor_alarm.ini
+[program:monitor_alarm] 
+command=/{virtualenv}/bin/celery -A monitor_alarm worker -n monitoralarm --loglevel=info 
+redirect_stderr=true 
+stdout_logfile=/tmp/oss_monitor_alarm.log 
+stdout_logfile_maxbytes=1MB 
+stdout_logfile_backups=10 
+directory=/{code_path}/flask_proj 
 user={user}
 ```
