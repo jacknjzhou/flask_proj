@@ -24,7 +24,7 @@ class MyLog(object):
         self.name = name
         self.logger = logging.getLogger(self.name)
 
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
         #self.fh = logging.FileHandler(self.path + self.filename)
         self.fh = MyTimedRotatingFileHandler(self.path+self.filename)
         self.fh.setLevel(logging.DEBUG)

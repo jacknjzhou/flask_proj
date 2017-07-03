@@ -16,11 +16,9 @@ from edm_mail.ptools.analysis_helper import AnalysisHelper
 """
 @ function:
 @ 平台消息推送的处理逻辑：
-@    oss_notify数据库中 notify_platform_send_msg表中取提交过来的任务,进行处理
-@    oss_notify数据库中 notify_platform_send_msg_detail中记录上一个处理中的详情,
-@    即把所有的批量任务拆分成原子的操作.
-@    转换批量任务为原子任务,组合好相应的需要发送的消息内容,放入 notify_platform_send_msg_detail中,
-@    另外的定时任务单独去处理需要该表中的需要发送的任务
+@    接收任务
+@    获取任务类型,并根据类型获取相应的接收者信息
+@    仅
 """
 
 
