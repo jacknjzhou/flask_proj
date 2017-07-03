@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 import traceback
-
+import time
 from monitor_alarm.celery import app
 
 try:
@@ -71,13 +71,17 @@ def process_write_info_format(r_info):
     f_info = {"measurement":"monitor_info"}
     f_info["tags"] ={
         "caller":r_info.get("caller"),
-        "callee":r_info.get("callee")
+        "callee":r_info.get("callee"),
+        "traceId":r_info.get("traceId"),
+        "parentId":r_info.get("parentId"),
+        "spanId":r_info.get("spanId"),
+        "methodName":r_info.get("methodName")
     }
-    f_info['time'] = r_info.get("startTime")
+    #f_info['time'] = int(time.time())
 
     f_info['fields']={}
     for key,value in r_info.items():
-        if key not in ("caller","callee","startTime"):
+        if key not in ("caller","callee","traceId","parentId","spanId","methodName"):
             f_info['fields'][key]=value
 
     return f_info

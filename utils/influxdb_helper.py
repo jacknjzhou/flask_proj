@@ -8,25 +8,25 @@ class InfluxDBHelper(object):
     def __init__(self, ip, port, username, password, dbname):
         self._dbname = dbname
         self._host = ip
-        self._port = port if isinstance(port, int) else int(port)
+        self._port = port # if isinstance(port, int) else int(port)
         self._username = username if username else None
         self._password = password if password else None
         #self._conn = self._connect()
 
     def _connect(self):
         try:
-            print self._username
-            print self._password
-            print self._dbname
-            print self._host
-            print self._port
+            #print self._username
+            #print self._password
+            #print self._dbname
+            #print self._host
+            #print self._port
 
             if self._username is not None and self._password is not None:
-                print "username is not none"
+                #print "username is not none"
                 conn = influxdb.InfluxDBClient(database=self._dbname, host=self._host, port=self._port,
                                                username=self._username, password=self._password)
             else:
-                print "username is none"
+                #print "username is none"
                 conn = influxdb.InfluxDBClient(database=self._dbname, host=self._host, port=self._port)
 
         except Exception as e:
@@ -39,7 +39,7 @@ class InfluxDBHelper(object):
     def write_info(self,json_info):
         try:
             self._conn = self._connect()
-            print type(json_info)
+            #print type(json_info)
             print json_info
             result = self._conn.write_points(json_info)
 
@@ -59,11 +59,12 @@ class InfluxDBHelper(object):
 
     def parse_result(self,resp_info):
         f_result = []
-        if not isinstance(influxdb.resultset.ResultSet):
+        if not isinstance(resp_info,influxdb.resultset.ResultSet):
             print "return result not ResultSet object."
             return f_result
         for item in resp_info.get_points():
             f_result.append(item)
-
+        #print "&&&&&&&&&&&&&&&&&&&&"
+        #print f_result
         return f_result
 

@@ -77,6 +77,9 @@ class ProductionConfig(Config):
     BACKEND_URL = 'file:///tmp'
     # CELERY_RESULT_BACKEND='redis://localhost:6379/1'
     # app.push.api config
+    INFLUXDB_HOST = '127.0.0.1'
+    INFLUXDB_PORT = 8086
+    INFLUXDB_DBNAME = 'monitor_alarm'
 
 
 config = {
