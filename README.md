@@ -97,3 +97,19 @@ stdout_logfile_backups=10
 directory=/{code_path}/flask_proj 
 user={user}
 ```
+#采用gunicorn  gevent进行部署api时配置文件范例
+guicorn.py
+import os
+
+bind='127.0.0.1:5000'
+workers =4
+backlog=2048
+worker_class="gevent"
+debug=True
+proc_name="api.proc"
+pidfile="/tmp/api.proc.pid"
+logfile="/tmp/api.proc.log"
+loglevel='debug'
+```
+
+
