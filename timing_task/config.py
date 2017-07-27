@@ -10,9 +10,9 @@ from kombu import Queue, Exchange
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    FLASKY_MAIL_SUBJECT_PREFIX = '[JustShareCloud]'
-    FLASKY_MAIL_SENDER = 'JustShareCloud Admin <server@justsharecloud.com>'
-    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN') or 'server@justsharecloud.com'
+    FLASKY_MAIL_SUBJECT_PREFIX = '[Cloud]'
+    FLASKY_MAIL_SENDER = 'Admin <server@example.com>'
+    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN') or 'server@example.com'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # mail server config
     TITLE_DESC = u'即享云'
@@ -64,13 +64,13 @@ class DevelopmentConfig(Config):
     # app.push.api config
 
 
-class AwsTestingConfig(Config):
+class TestingConfig(Config):
     # mail config
     # TESTING = True
     DEBUG = True
 
     # celery config
-    BROKER_URL = 'amqp://test:OSAxMzoxMDo0OCBDU1QgMjAxN@10.0.6.106:5672//'
+    BROKER_URL = 'amqp://guest:guest@localhost:5672//'
     BACKEND_URL = 'file:///tmp'
     # CELERY_RESULT_BACKEND='redis://localhost:6379/1'
     # app.push.api config
@@ -78,7 +78,7 @@ class AwsTestingConfig(Config):
 
 class ProductionConfig(Config):
     # celery config
-    BROKER_URL = 'amqp://justshare:uoeawMfmzp81nsB-nblc@10.0.6.106:5672//'
+    BROKER_URL = 'amqp://guest:guest@localhost:5672//'
     BACKEND_URL = 'file:///tmp'
     # CELERY_RESULT_BACKEND='redis://localhost:6379/1'
     # app.push.api config
@@ -89,7 +89,7 @@ class ProductionConfig(Config):
 
 config = {
     'development': DevelopmentConfig,
-    'testing': AwsTestingConfig,
+    'testing': TestingConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
