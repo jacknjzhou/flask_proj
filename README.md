@@ -98,6 +98,7 @@ directory=/{code_path}/flask_proj
 user={user}
 ```
 #采用gunicorn  gevent进行部署api时配置文件范例
+```
 guicorn.py
 import os
 
